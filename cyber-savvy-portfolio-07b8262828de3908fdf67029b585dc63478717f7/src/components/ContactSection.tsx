@@ -1,48 +1,81 @@
-import { motion } from 'framer-motion';
-import { useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { Mail, Phone, MapPin, Github, Send, CheckCircle } from 'lucide-react';
+import { motion, useInView } from "framer-motion";
+import { useRef, useState } from "react";
+import { Mail, Phone, MapPin, Github, Send, CheckCircle } from "lucide-react";
 
 export const ContactSection = () => {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // For now, just show success message
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({ name: '', email: '', message: '' });
-    }, 3000);
+    setError("");
+    setIsLoading(true);
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("access_key", "6debfd7a-209f-48c6-9ab0-610a89731882");
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("message", formData.message);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsSubmitted(true);
+        setFormData({ name: "", email: "", message: "" });
+
+        setTimeout(() => {
+          setIsSubmitted(false);
+        }, 3000);
+      } else {
+        setError(data.message || "Something went wrong. Please try again.");
+      }
+    } catch (err) {
+      setError("Network error. Please check your connection.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const contactInfo = [
     {
       icon: Mail,
-      label: 'Email',
-      value: 'Savitpsps@gmail.com',
-      href: 'mailto:Savitpsps@gmail.com',
+      label: "Email",
+      value: "Savitpsps@gmail.com",
+      href: "mailto:Savitpsps@gmail.com",
     },
     {
       icon: Phone,
-      label: 'Phone',
-      value: '+91 6367822710',
-      href: 'tel:+916367822710',
+      label: "Phone",
+      value: "+91 6367822710",
+      href: "tel:+916367822710",
     },
     {
       icon: MapPin,
-      label: 'Location',
-      value: 'Bikaner, Rajasthan',
+      label: "Location",
+      value: "Bikaner, Rajasthan",
       href: null,
     },
     {
       icon: Github,
-      label: 'GitHub',
-      value: 'savitps-QualityAssurance',
-      href: 'https://github.com/savitps-QualityAssurance',
+      label: "GitHub",
+      value: "savitps-QualityAssurance",
+      href: "https://github.com/savitps-QualityAssurance",
     },
   ];
 
@@ -55,13 +88,17 @@ export const ContactSection = () => {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
+          {/* Header */}
           <div className="text-center mb-16">
-            <p className="text-primary font-mono text-sm mb-4 tracking-wider">— CONTACT</p>
+            <p className="text-primary font-mono text-sm mb-4 tracking-wider">
+              — CONTACT
+            </p>
             <h2 className="section-title">
               Let's <span className="text-gradient">Connect</span>
             </h2>
             <p className="section-subtitle mx-auto mt-4">
-              Open to internships, Jobs, collaborations, and learning opportunities
+              Open to internships, jobs, collaborations, and learning
+              opportunities
             </p>
           </div>
 
@@ -74,9 +111,9 @@ export const ContactSection = () => {
             >
               <h3 className="text-2xl font-bold mb-6">Get in Touch</h3>
               <p className="text-muted-foreground mb-8 leading-relaxed">
-                I'm currently looking for opportunities to grow and contribute. 
-                Whether you have a project in mind, a question, or just want to say hi — 
-                I'd love to hear from you!
+                I'm currently looking for opportunities to grow and contribute.
+                Whether you have a project, a question, or just want to say hi —
+                I’d love to hear from you!
               </p>
 
               <div className="space-y-4">
@@ -90,28 +127,39 @@ export const ContactSection = () => {
                       <item.icon size={20} />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">{item.label}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {item.label}
+                      </p>
                       {item.href ? (
                         <a
                           href={item.href}
-                          target={item.href.startsWith('http') ? '_blank' : undefined}
-                          rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                          target={
+                            item.href.startsWith("http") ? "_blank" : undefined
+                          }
+                          rel={
+                            item.href.startsWith("http")
+                              ? "noopener noreferrer"
+                              : undefined
+                          }
                           className="text-foreground hover:text-primary transition-colors font-medium"
                         >
                           {item.value}
                         </a>
                       ) : (
-                        <p className="text-foreground font-medium">{item.value}</p>
+                        <p className="text-foreground font-medium">
+                          {item.value}
+                        </p>
                       )}
                     </div>
                   </motion.div>
                 ))}
               </div>
 
-              {/* Availability badge */}
               <div className="mt-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-primary text-sm font-medium">Available for opportunities</span>
+                <span className="text-primary text-sm font-medium">
+                  Available for opportunities
+                </span>
               </div>
             </motion.div>
 
@@ -123,59 +171,52 @@ export const ContactSection = () => {
             >
               <form onSubmit={handleSubmit} className="glass-card p-8">
                 <h3 className="text-xl font-bold mb-6">Send a Message</h3>
-                
+
                 <div className="space-y-5">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-muted-foreground mb-2">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                      className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground"
-                      placeholder="John Doe"
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="Your Name"
+                    className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border"
+                  />
 
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-muted-foreground mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                      className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground"
-                      placeholder="john@example.com"
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="Email Address"
+                    className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border"
+                  />
 
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-muted-foreground mb-2">
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      required
-                      rows={4}
-                      className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground resize-none"
-                      placeholder="Your message here..."
-                    />
-                  </div>
+                  <textarea
+                    name="message"
+                    required
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
+                    }
+                    placeholder="Your message..."
+                    className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border resize-none"
+                  />
 
                   <button
                     type="submit"
-                    disabled={isSubmitted}
-                    className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading || isSubmitted}
+                    className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
                   >
-                    {isSubmitted ? (
+                    {isLoading ? (
+                      "Sending..."
+                    ) : isSubmitted ? (
                       <>
                         <CheckCircle size={18} />
                         Message Sent!
@@ -187,6 +228,12 @@ export const ContactSection = () => {
                       </>
                     )}
                   </button>
+
+                  {error && (
+                    <p className="text-sm text-red-500 text-center mt-2">
+                      {error}
+                    </p>
+                  )}
                 </div>
               </form>
             </motion.div>
